@@ -55,7 +55,8 @@ const Language = require("../models/adminModel/Language");
 const Qualifications = require("../models/adminModel/Qualifications");
 const LiveStreaming = require("../models/adminModel/LiveStreaming");
 const AstrologerRequests = require("../models/adminModel/AstrologerRequests");
-const Blogs = require('../models/adminModel/Blogs');
+const Blogs = require("../models/adminModel/Blogs");
+const FortuneStore = require("../models/adminModel/FortuneStore");
 
 // add Skill
 const uploadSkill = configureMulter("uploads/skillsImage/", [
@@ -74,6 +75,11 @@ const uploadQualificationImage = configureMulter(
   "uploads/qualificationImage/",
   [{ name: "documents", maxCount: 1 }]
 );
+
+//ecommerce banner image
+const uploadEcommerceBanner = configureMulter("uploads/ecommerceBannerImage/", [
+  { name: "banner_img", maxCount: 1 },
+]);
 
 const uploadAstrologerImages = configureMulter("uploads/profileImage/", [
   { name: "profileImage", maxCount: 1 },
@@ -231,10 +237,8 @@ exports.deleteUser = async function (req, res) {
   }
 };
 
-
-
 exports.skill = function (req, res) {
-  console.log('test', req.files);
+  console.log("test", req.files);
   uploadSkill(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
       return res
@@ -259,9 +263,9 @@ exports.skill = function (req, res) {
 
       const image = req.files["image"]
         ? req.files["image"][0].path.replace(
-          /^.*skillsImage[\\/]/,
-          "skillsImage/"
-        )
+            /^.*skillsImage[\\/]/,
+            "skillsImage/"
+          )
         : "";
 
       // Create a new file entry in the Customers collection
@@ -755,7 +759,6 @@ exports.deleteRechargePlan = async function (req, res) {
 
 // Remedy
 
-
 exports.addRemedy = function (req, res) {
   uploadRemedy(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
@@ -781,9 +784,9 @@ exports.addRemedy = function (req, res) {
 
       const remedyIcon = req.files["remedyIcon"]
         ? req.files["remedyIcon"][0].path.replace(
-          /^.*remedyImage[\\/]/,
-          "remedyImage/"
-        )
+            /^.*remedyImage[\\/]/,
+            "remedyImage/"
+          )
         : "";
 
       // Create a new file entry in the Customers collection
@@ -1267,7 +1270,6 @@ exports.getMainExpertise = async function (req, res) {
 };
 
 // Gift
-
 
 exports.addGift = async function (req, res) {
   uploadGifts(req, res, async function (err) {
@@ -2168,8 +2170,7 @@ exports.viewVideoUrl = async function (req, res) {
   }
 };
 
-
-// Ask question 
+// Ask question
 exports.addAskQuestion = async function (req, res) {
   try {
     const { title, description } = req.body;
@@ -2212,7 +2213,6 @@ exports.updateAskQuestion = async function (req, res) {
 
     // Find the AskAstrologer entry by ID
     const askQuestion = await AskQuestion.findById(askQuestionId);
-
 
     if (!askQuestion) {
       return res
@@ -2263,14 +2263,17 @@ exports.deleteAskQuestion = async function (req, res) {
     });
   }
 };
-// Ask Question 
+// Ask Question
 
 // Religion & Sprituality
 exports.addReligionSpirituality = async function (req, res) {
   try {
     const { title, description } = req.body;
 
-    const newReligionSpirituality = new ReligionSpirituality({ title, description });
+    const newReligionSpirituality = new ReligionSpirituality({
+      title,
+      description,
+    });
     await newReligionSpirituality.save();
 
     res.status(200).json({
@@ -2307,13 +2310,15 @@ exports.updateReligionSpirituality = async function (req, res) {
     const { religionSpiritualityId, title, description } = req.body; // Assuming you'll also receive the ID of the entry to update
 
     // Find the AskAstrologer entry by ID
-    const religionSpirituality = await ReligionSpirituality.findById(religionSpiritualityId);
-
+    const religionSpirituality = await ReligionSpirituality.findById(
+      religionSpiritualityId
+    );
 
     if (!religionSpirituality) {
-      return res
-        .status(404)
-        .json({ success: false, message: "ReligionSpirituality entry not found." });
+      return res.status(404).json({
+        success: false,
+        message: "ReligionSpirituality entry not found.",
+      });
     }
 
     // Update the title field
@@ -2339,7 +2344,8 @@ exports.deleteReligionSpirituality = async function (req, res) {
   try {
     const religionSpiritualityId = req.body.religionSpiritualityId;
 
-    const deletedReligionSpirituality = await ReligionSpirituality.findByIdAndDelete(religionSpiritualityId);
+    const deletedReligionSpirituality =
+      await ReligionSpirituality.findByIdAndDelete(religionSpiritualityId);
 
     if (!deletedReligionSpirituality) {
       return res
@@ -2347,9 +2353,10 @@ exports.deleteReligionSpirituality = async function (req, res) {
         .json({ success: false, message: "Religion Spirituality not found." });
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Religion Spirituality deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Religion Spirituality deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting Religion Spirituality:", error);
     res.status(500).json({
@@ -2405,7 +2412,6 @@ exports.updateAstroMagazine = async function (req, res) {
     // Find the AskAstrologer entry by ID
     const astroMagazine = await AstroMagazine.findById(astroMagazineId);
 
-
     if (!astroMagazine) {
       return res
         .status(404)
@@ -2435,7 +2441,9 @@ exports.deleteAstroMagazine = async function (req, res) {
   try {
     const astroMagazineId = req.body.astroMagazineId;
 
-    const deletedAstroMagazine = await AstroMagazine.findByIdAndDelete(astroMagazineId);
+    const deletedAstroMagazine = await AstroMagazine.findByIdAndDelete(
+      astroMagazineId
+    );
 
     if (!deletedAstroMagazine) {
       return res
@@ -2486,7 +2494,10 @@ exports.getBirhatHoroscope = async function (req, res) {
 
     res.status(200).json({ success: true, birhatHoroscope });
   } catch (error) {
-    console.error("Error fetching Title and description of Birhat Horoscope:", error);
+    console.error(
+      "Error fetching Title and description of Birhat Horoscope:",
+      error
+    );
     res.status(500).json({
       success: false,
       message: "Failed to fetch Birhat Horoscope",
@@ -2501,7 +2512,6 @@ exports.updateBirhatHoroscope = async function (req, res) {
 
     // Find the AskAstrologer entry by ID
     const birhatHoroscope = await BirhatHoroscope.findById(birhatHoroscopeId);
-
 
     if (!birhatHoroscope) {
       return res
@@ -2532,7 +2542,9 @@ exports.deleteBirhatHoroscope = async function (req, res) {
   try {
     const birhatHoroscopeId = req.body.birhatHoroscopeId;
 
-    const deleteBirhatHoroscope = await BirhatHoroscope.findByIdAndDelete(birhatHoroscopeId);
+    const deleteBirhatHoroscope = await BirhatHoroscope.findByIdAndDelete(
+      birhatHoroscopeId
+    );
 
     if (!deleteBirhatHoroscope) {
       return res
@@ -2540,9 +2552,10 @@ exports.deleteBirhatHoroscope = async function (req, res) {
         .json({ success: false, message: "Birhat Horoscope not found." });
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Birhat Horoscope deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Birhat Horoscope deleted successfully",
+    });
   } catch (error) {
     console.error("Error deleting Birhat Horoscope:", error);
     res.status(500).json({
@@ -2599,7 +2612,6 @@ exports.updateDailyPanchang = async function (req, res) {
     // Find the AskAstrologer entry by ID
     const dailyPanchang = await DailyPanchang.findById(dailyPanchangId);
 
-
     if (!dailyPanchang) {
       return res
         .status(404)
@@ -2629,7 +2641,9 @@ exports.deleteDailyPanchang = async function (req, res) {
   try {
     const dailyPanchangId = req.body.dailyPanchangId;
 
-    const deletedDailyPanchang = await DailyPanchang.findByIdAndDelete(dailyPanchangId);
+    const deletedDailyPanchang = await DailyPanchang.findByIdAndDelete(
+      dailyPanchangId
+    );
 
     if (!deletedDailyPanchang) {
       return res
@@ -2652,7 +2666,7 @@ exports.deleteDailyPanchang = async function (req, res) {
 
 // Daily panchang
 
-// Remedies 
+// Remedies
 exports.addRemedies = async function (req, res) {
   try {
     const { title, description } = req.body;
@@ -2695,7 +2709,6 @@ exports.updateRemedies = async function (req, res) {
 
     // Find the AskAstrologer entry by ID
     const remedies = await Remedies.findById(remediesId);
-
 
     if (!remedies) {
       return res
@@ -2747,7 +2760,7 @@ exports.deleteRemedies = async function (req, res) {
   }
 };
 
-// Remedies 
+// Remedies
 
 // yellow book
 exports.addYellowBook = async function (req, res) {
@@ -2792,7 +2805,6 @@ exports.updateYellowBook = async function (req, res) {
 
     // Find the AskAstrologer entry by ID
     const yellowBook = await YellowBook.findById(yellowBookId);
-
 
     if (!yellowBook) {
       return res
@@ -2855,9 +2867,15 @@ exports.addNumerology = async function (req, res) {
   try {
     uploadNumerologyImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       try {
@@ -2873,13 +2891,17 @@ exports.addNumerology = async function (req, res) {
 
         const numerology_image = req.files["numerology_image"]
           ? req.files["numerology_image"][0].path.replace(
-            /^.*NumerologyImage[\\/]/,
-            "NumerologyImage/"
-          )
+              /^.*NumerologyImage[\\/]/,
+              "NumerologyImage/"
+            )
           : "";
 
         // Create a new entry in the Numerology collection
-        const newNumerology = new Numerology({ title, description, numerology_image });
+        const newNumerology = new Numerology({
+          title,
+          description,
+          numerology_image,
+        });
         await newNumerology.save();
 
         res.status(201).json({
@@ -2905,7 +2927,6 @@ exports.addNumerology = async function (req, res) {
     });
   }
 };
-
 
 exports.getAllNumerology = async function (req, res) {
   try {
@@ -3021,9 +3042,15 @@ exports.addVivahMuhurat = async function (req, res) {
   try {
     uploadVivahMuhuratImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       try {
@@ -3039,13 +3066,17 @@ exports.addVivahMuhurat = async function (req, res) {
 
         const vivahMuhurat_image = req.files["vivahMuhurat_image"]
           ? req.files["vivahMuhurat_image"][0].path.replace(
-            /^.*VivahMuhuratImage[\\/]/,
-            "VivahMuhuratImage/"
-          )
+              /^.*VivahMuhuratImage[\\/]/,
+              "VivahMuhuratImage/"
+            )
           : "";
 
         // Create a new entry in the Numerology collection
-        const newVivahMuhurat = new VivahMuhurat({ title, description, vivahMuhurat_image });
+        const newVivahMuhurat = new VivahMuhurat({
+          title,
+          description,
+          vivahMuhurat_image,
+        });
         await newVivahMuhurat.save();
 
         res.status(201).json({
@@ -3071,7 +3102,6 @@ exports.addVivahMuhurat = async function (req, res) {
     });
   }
 };
-
 
 exports.getAllVivahMuhurat = async function (req, res) {
   try {
@@ -3156,7 +3186,9 @@ exports.deleteVivahMuhurat = async function (req, res) {
   try {
     const vivahMuhuratId = req.body.vivahMuhuratId;
 
-    const deletedVivahMuhurat = await VivahMuhurat.findByIdAndDelete(vivahMuhuratId);
+    const deletedVivahMuhurat = await VivahMuhurat.findByIdAndDelete(
+      vivahMuhuratId
+    );
 
     if (!deletedVivahMuhurat) {
       return res
@@ -3179,17 +3211,24 @@ exports.deleteVivahMuhurat = async function (req, res) {
 // Vivah Muhurat
 
 // Mundan Muhurat
-const uploadMundanMuhuratImage = configureMulter("uploads/MundanMuhuratImage/", [
-  { name: "mundanMuhurat_image", maxCount: 1 },
-]);
+const uploadMundanMuhuratImage = configureMulter(
+  "uploads/MundanMuhuratImage/",
+  [{ name: "mundanMuhurat_image", maxCount: 1 }]
+);
 
 exports.addMundanMuhurat = async function (req, res) {
   try {
     uploadMundanMuhuratImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       try {
@@ -3205,12 +3244,16 @@ exports.addMundanMuhurat = async function (req, res) {
 
         const mundanMuhurat_image = req.files["mundanMuhurat_image"]
           ? req.files["mundanMuhurat_image"][0].path.replace(
-            /^.*MundanMuhuratImage[\\/]/,
-            "MundanMuhuratImage/"
-          )
+              /^.*MundanMuhuratImage[\\/]/,
+              "MundanMuhuratImage/"
+            )
           : "";
 
-        const newMundanMuhurat = new MundanMuhurat({ title, description, mundanMuhurat_image });
+        const newMundanMuhurat = new MundanMuhurat({
+          title,
+          description,
+          mundanMuhurat_image,
+        });
         await newMundanMuhurat.save();
 
         res.status(201).json({
@@ -3237,13 +3280,11 @@ exports.addMundanMuhurat = async function (req, res) {
   }
 };
 
-
 exports.getAllMundanMuhurat = async function (req, res) {
   try {
     const mundanMuhurat = await MundanMuhurat.find();
 
     res.status(200).json({ success: true, mundanMuhurat });
-
   } catch (error) {
     console.error("Error fetching MundanMuhurat:", error);
     res.status(500).json({
@@ -3277,7 +3318,9 @@ exports.updateMundanMuhurat = function (req, res) {
         });
       }
 
-      const existingMundanMuhurat = await MundanMuhurat.findById(mundanMuhuratId);
+      const existingMundanMuhurat = await MundanMuhurat.findById(
+        mundanMuhuratId
+      );
       if (!existingMundanMuhurat) {
         return res
           .status(404)
@@ -3322,7 +3365,9 @@ exports.deleteMundanMuhurat = async function (req, res) {
   try {
     const mundanMuhuratId = req.body.mundanMuhuratId;
 
-    const deletedMundanMuhurat = await MundanMuhurat.findByIdAndDelete(mundanMuhuratId);
+    const deletedMundanMuhurat = await MundanMuhurat.findByIdAndDelete(
+      mundanMuhuratId
+    );
 
     if (!deletedMundanMuhurat) {
       return res
@@ -3344,7 +3389,7 @@ exports.deleteMundanMuhurat = async function (req, res) {
 };
 // // Mundan Muhurat
 
-// // Annaprashan 
+// // Annaprashan
 const uploadAnnaprashanImage = configureMulter("uploads/AnnaprashanImage/", [
   { name: "annaprashan_image", maxCount: 1 },
 ]);
@@ -3353,9 +3398,15 @@ exports.addAnnaprashan = async function (req, res) {
   try {
     uploadAnnaprashanImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       try {
@@ -3371,13 +3422,17 @@ exports.addAnnaprashan = async function (req, res) {
 
         const annaprashan_image = req.files["annaprashan_image"]
           ? req.files["annaprashan_image"][0].path.replace(
-            /^.*AnnaprashanImage[\\/]/,
-            "AnnaprashanImage/"
-          )
+              /^.*AnnaprashanImage[\\/]/,
+              "AnnaprashanImage/"
+            )
           : "";
 
         // Create a new entry in the Numerology collection
-        const newAnnaprashan = new Annaprashan({ title, description, annaprashan_image });
+        const newAnnaprashan = new Annaprashan({
+          title,
+          description,
+          annaprashan_image,
+        });
         await newAnnaprashan.save();
 
         res.status(201).json({
@@ -3403,7 +3458,6 @@ exports.addAnnaprashan = async function (req, res) {
     });
   }
 };
-
 
 exports.getAllAnnaprashan = async function (req, res) {
   try {
@@ -3488,7 +3542,9 @@ exports.deleteAnnaprashan = async function (req, res) {
   try {
     const annaprashanId = req.body.annaprashanId;
 
-    const deletedAnnaprashan = await Annaprashan.findByIdAndDelete(annaprashanId);
+    const deletedAnnaprashan = await Annaprashan.findByIdAndDelete(
+      annaprashanId
+    );
 
     if (!deletedAnnaprashan) {
       return res
@@ -3508,7 +3564,7 @@ exports.deleteAnnaprashan = async function (req, res) {
     });
   }
 };
-// // Annaprashan 
+// // Annaprashan
 
 // // Vidyarambh Muhurat
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
@@ -3570,7 +3626,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //   }
 // };
 
-
 // exports.getAllNumerology = async function (req, res) {
 //   try {
 //     const numerology = await Numerology.find();
@@ -3676,7 +3731,7 @@ exports.deleteAnnaprashan = async function (req, res) {
 // };
 // // Vidyarambh Muhurat
 
-// // Dev Prathistha Muhurat 
+// // Dev Prathistha Muhurat
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
 //   { name: "numerology_image", maxCount: 1 },
 // ]);
@@ -3735,7 +3790,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -3840,9 +3894,9 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-// // Dev Prathistha Muhurat 
+// // Dev Prathistha Muhurat
 
-// // GrihaPravesh Muhurat 
+// // GrihaPravesh Muhurat
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
 //   { name: "numerology_image", maxCount: 1 },
 // ]);
@@ -3901,7 +3955,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4006,9 +4059,9 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-// // GrihaPravesh Muhurat 
+// // GrihaPravesh Muhurat
 
-// // GrihaRog Nivaran 
+// // GrihaRog Nivaran
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
 //   { name: "numerology_image", maxCount: 1 },
 // ]);
@@ -4067,7 +4120,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4172,7 +4224,7 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-// // GrihaRog Nivaran 
+// // GrihaRog Nivaran
 
 // // SolarEclipse
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
@@ -4233,7 +4285,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4340,7 +4391,7 @@ exports.deleteAnnaprashan = async function (req, res) {
 // };
 // // SolarEclipse
 
-// // Lunar Eclipse 
+// // Lunar Eclipse
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
 //   { name: "numerology_image", maxCount: 1 },
 // ]);
@@ -4399,7 +4450,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4504,9 +4554,9 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-// // Lunar Eclipse 
+// // Lunar Eclipse
 
-// // Rahukaal 
+// // Rahukaal
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
 //   { name: "numerology_image", maxCount: 1 },
 // ]);
@@ -4565,7 +4615,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4670,7 +4719,7 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-// // Rahukaal 
+// // Rahukaal
 
 // // Kaalsarp Dosha
 // const uploadNumerologyImage = configureMulter("uploads/NumerologyImage/", [
@@ -4731,7 +4780,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //     });
 //   }
 // };
-
 
 // exports.getAllNumerology = async function (req, res) {
 //   try {
@@ -4898,7 +4946,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //   }
 // };
 
-
 // exports.getAllNumerology = async function (req, res) {
 //   try {
 //     const numerology = await Numerology.find();
@@ -5003,7 +5050,6 @@ exports.deleteAnnaprashan = async function (req, res) {
 //   }
 // };
 // // Learn Astrologer
-
 
 // auspicious time
 exports.addAuspiciousTime = async function (req, res) {
@@ -5049,7 +5095,6 @@ exports.updateAuspiciousTime = async function (req, res) {
     // Find the AskAstrologer entry by ID
     const auspiciousTime = await AuspiciousTime.findById(auspiciousTimeId);
 
-
     if (!auspiciousTime) {
       return res
         .status(404)
@@ -5079,7 +5124,9 @@ exports.deleteAuspiciousTime = async function (req, res) {
   try {
     const auspiciousTimeId = req.body.auspiciousTimeId;
 
-    const deletedAuspiciousTime = await AuspiciousTime.findByIdAndDelete(auspiciousTimeId);
+    const deletedAuspiciousTime = await AuspiciousTime.findByIdAndDelete(
+      auspiciousTimeId
+    );
 
     if (!deletedAuspiciousTime) {
       return res
@@ -5319,7 +5366,6 @@ exports.deleteQuestion = async function (req, res) {
     });
   }
 };
-
 
 exports.addAstrologer = function (req, res) {
   try {
@@ -5845,7 +5891,9 @@ exports.getAllAstrologers = async function (req, res) {
 
 exports.getAstrologerRequests = async function (req, res) {
   try {
-    const requests = await AstrologerRequests.find().populate("astrologerId", ['astrologerName']);
+    const requests = await AstrologerRequests.find().populate("astrologerId", [
+      "astrologerName",
+    ]);
 
     res.status(200).json({
       success: true,
@@ -5959,15 +6007,20 @@ function getFileExtension(filename) {
 const uploadBlog = multer({ storage: blogStorage }).single("image");
 
 exports.addBlog = async function (req, res) {
-
   try {
     uploadBlog(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
         // Multer error handling
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
         // Other errors during file upload
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err, });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       const { title, blogCategoryId, created_by, description } = req.body;
@@ -6027,25 +6080,36 @@ exports.updateBlog = async function (req, res) {
     uploadBlog(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
         // Multer error handling
-        return res.status(500).json({ success: false, message: "Multer error", error: err });
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
         // Other errors during file upload
-        return res.status(500).json({ success: false, message: "Error uploading file", error: err, });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
-      const { blogId, title, blogCategoryId, created_by, description } = req.body;
+      const { blogId, title, blogCategoryId, created_by, description } =
+        req.body;
       const imagePath = req.file ? req.file.path : ""; // If image uploaded, get its path
 
       const existingCategory = await BlogsCategory.findById(blogCategoryId);
 
       if (!existingCategory) {
-        return res.status(404).json({ success: false, message: "Blog category not found." });
+        return res
+          .status(404)
+          .json({ success: false, message: "Blog category not found." });
       }
 
       const blogToUpdate = await Blogs.findById(blogId);
 
       if (!blogToUpdate) {
-        return res.status(404).json({ success: false, message: "Blog not found." });
+        return res
+          .status(404)
+          .json({ success: false, message: "Blog not found." });
       }
 
       // Update blog properties
@@ -6108,7 +6172,9 @@ exports.addBlogCategory = async function (req, res) {
 
     // Ensure that the blog category is provided
     if (!blog_category) {
-      return res.status(400).json({ success: false, message: "Blog category is required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Blog category is required" });
     }
 
     // Create a new instance of the BlogsCategory model with the provided blog category
@@ -6118,11 +6184,17 @@ exports.addBlogCategory = async function (req, res) {
     await newBlogCategory.save();
 
     // Respond with a success message
-    return res.status(200).json({ success: true, message: "Blog category added successfully" });
+    return res
+      .status(200)
+      .json({ success: true, message: "Blog category added successfully" });
   } catch (error) {
     // Handle any errors that occur during the process
     console.error("Error adding Blog Category:", error);
-    return res.status(500).json({ success: false, message: "Failed to add Blog Category", error: error.message });
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add Blog Category",
+      error: error.message,
+    });
   }
 };
 
@@ -6177,9 +6249,9 @@ exports.addTestimonial = function (req, res) {
 
       const image = req.files["image"]
         ? req.files["image"][0].path.replace(
-          /^.*testimonialImage[\\/]/,
-          "testimonialImage/"
-        )
+            /^.*testimonialImage[\\/]/,
+            "testimonialImage/"
+          )
         : "";
 
       // Create a new testimonial entry in the Testimonial collection
@@ -6189,7 +6261,7 @@ exports.addTestimonial = function (req, res) {
         astrologerId,
         youtubeLink,
         description,
-        rating
+        rating,
       });
       await newTestimonial.save();
 
@@ -6209,7 +6281,6 @@ exports.addTestimonial = function (req, res) {
   });
 };
 
-
 exports.updateTestimonial = function (req, res) {
   uploadTestimonial(req, res, async function (err) {
     if (err instanceof multer.MulterError) {
@@ -6224,7 +6295,8 @@ exports.updateTestimonial = function (req, res) {
 
     try {
       const { testimonialId } = req.params;
-      const { name, image, astrologerId, rating, description, youtubeLink } = req.body;
+      const { name, image, astrologerId, rating, description, youtubeLink } =
+        req.body;
 
       // Validate required fields
       const requiredFields = [
@@ -6314,9 +6386,10 @@ exports.deleteTestimonial = async function (req, res) {
         .json({ success: false, message: "Testimonial not found." });
     }
 
-    res
-      .status(200)
-      .json({ success: true, message: "Testimonial soft deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Testimonial soft deleted successfully",
+    });
   } catch (error) {
     console.error("Error soft deleting testimonial:", error);
     res.status(500).json({
@@ -6343,7 +6416,6 @@ exports.getAllTestimonial = async function (req, res) {
     });
   }
 };
-
 
 // get astrologer id
 exports.checkAstrologer = async function (req, res) {
@@ -6373,7 +6445,6 @@ exports.checkAstrologer = async function (req, res) {
       .json({ success: false, message: "Login failed", error: error.message });
   }
 };
-
 
 //===================================== add customer =========================================
 exports.addCustomer = async function (req, res) {
@@ -6524,11 +6595,12 @@ exports.updateAnnouncement = async function (req, res) {
 
 // delete anouncement
 exports.deleteAnnouncement = async function (req, res) {
-
   try {
     const announcementId = req.body.announcementId;
 
-    const deletedAnnouncement = await Announcement.findByIdAndDelete(announcementId);
+    const deletedAnnouncement = await Announcement.findByIdAndDelete(
+      announcementId
+    );
 
     if (!deletedAnnouncement) {
       return res
@@ -6730,9 +6802,9 @@ exports.addBanners = function (req, res) {
 
       const bannerImage = req.files["bannerImage"]
         ? req.files["bannerImage"][0].path.replace(
-          /^.*bannersImage[\\/]/,
-          "bannersImage/"
-        )
+            /^.*bannersImage[\\/]/,
+            "bannersImage/"
+          )
         : "";
 
       // Create a new file entry in the Customers collection
@@ -6930,9 +7002,9 @@ const sendNotification = async (req, res) => {
     const { astrologerIds, customerIds, title, description } = req.body;
     const image = req?.files["image"]
       ? req?.files["image"][0]?.path.replace(
-        /^.*notificationImage[\\/]/,
-        "notificationImage/"
-      )
+          /^.*notificationImage[\\/]/,
+          "notificationImage/"
+        )
       : "";
 
     if (
@@ -8434,4 +8506,173 @@ exports.createLiveStreaming = async function (req, res) {
   }
 };
 
+//======================== Fortune Store ============================
 
+const fortuneStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/fortuneStore/"); // Specify the destination folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${uuidv4()}${getFileExtension(file.originalname)}`;
+    cb(null, uniqueFilename); // Set unique filename with original extension
+  },
+});
+
+function getFileExtension(filename) {
+  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 1);
+}
+
+const uploadImage = multer({ storage: fortuneStorage }).single("image");
+
+exports.addFortuneStore = async function (req, res) {
+  try {
+    uploadImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { title, status, storeCategory } = req.body;
+
+      if (!title) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Title is required" });
+      }
+
+      if (!status) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Status is required" });
+      }
+
+      const imagePath = req.file ? req.file.path : ""; // If image uploaded, get its path
+
+      const newStore = new FortuneStore({
+        title,
+        image: imagePath, // Assign the image path to the 'image' field
+        status: status,
+        storeCategory: storeCategory,
+      });
+
+      await newStore.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Store added successfully",
+        newStore,
+      });
+    });
+  } catch (error) {
+    console.error("Error adding astroblog:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add astroblog",
+      error: error.message,
+    });
+  }
+};
+
+exports.FortuneStoreList = async function (req, res) {
+  try {
+    const allStore = await FortuneStore.find();
+
+    res.status(200).json({ success: true, allStore });
+  } catch (error) {
+    console.error("Error fetching  Blog:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch  Blog",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateFortuneStore = async function (req, res) {
+  try {
+    uploadImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res
+          .status(500)
+          .json({
+            success: false,
+            message: "Error uploading file",
+            error: err,
+          });
+      }
+
+      const { storeId, title } = req.body;
+      const imagePath = req.file ? req.file.path : "";
+
+      const storeToUpdate = await FortuneStore.findById(storeId);
+
+      if (!storeToUpdate) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Store not found." });
+      }
+
+      // Update store properties
+      storeToUpdate.title = title;
+      storeToUpdate.image = imagePath;
+
+      await storeToUpdate.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Store updated successfully",
+        updatedFortuneStore: storeToUpdate,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating store:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update store",
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteFortuneStore = async function (req, res) {
+  try {
+    const storeId = req.body.storeId;
+    const deletedStore = await FortuneStore.findByIdAndUpdate(
+      storeId, // Use storeId directly
+      { $set: { deleted: true } },
+      { new: true } // Return the updated document
+    );
+
+    if (!deletedStore) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Store not found." });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Fortune Store deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting store:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to soft delete store",
+      error: error.message,
+    });
+  }
+};

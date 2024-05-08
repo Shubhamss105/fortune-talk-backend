@@ -239,4 +239,10 @@ router.post('/update_qualifications', adminController.updateQualifications)
 
 router.post('/create_live_streaming', adminController.createLiveStreaming)
 
+//Fortune Store - Ecommerce
+router.post('/create-fortune-store',adminController.addFortuneStore)
+router.get('/fortune-store-list',adminController.FortuneStoreList)
+router.put('/update-fortune-store',adminController.updateFortuneStore)
+router.delete('/delete-fortune-store',adminController.deleteFortuneStore)
+
 module.exports = router;
