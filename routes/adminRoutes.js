@@ -239,10 +239,32 @@ router.post('/update_qualifications', adminController.updateQualifications)
 
 router.post('/create_live_streaming', adminController.createLiveStreaming)
 
-//Fortune Store - Ecommerce
-router.post('/create-fortune-store',adminController.addFortuneStore)
-router.get('/fortune-store-list',adminController.FortuneStoreList)
-router.put('/update-fortune-store',adminController.updateFortuneStore)
-router.delete('/delete-fortune-store',adminController.deleteFortuneStore)
+//Pooja Category 
+router.post('/create-pooja-category',adminController.addPoojaCategory)
+router.get('/pooja-category-list',adminController.PoojaCategoryList)
+router.put('/update-pooja-category',adminController.updatePoojaCategory)
+router.delete('/delete-pooja-category',adminController.deletePoojaCategory)
+router.put('/update-pooja-category-status',adminController.updatePoojaCategoryStatus)
+
+
+//Pooja 
+router.post('/create-pooja',adminController.addPooja)
+router.get('/pooja-list',adminController.PoojaList)
+router.put('/update-pooja',adminController.updatePooja)
+router.delete('/delete-pooja',adminController.deletePooja)
+router.put('/update-pooja-status',adminController.updatePoojaStatus)
+
+//Product Category
+router.post('/create-product-category',adminController.addProductCategory)
+router.get('/product-category-list',adminController.ProductCategoryList)
+router.put('/update-product-category',adminController.updateProductCategory)
+router.delete('/delete-product-category',adminController.deleteProductCategory)
+router.put('/update-product-category-status',adminController.updateProductCategoryStatus)
+
+//Product
+router.post('/create-product',adminController.addProduct)
+
+
+
 
 module.exports = router;

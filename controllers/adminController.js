@@ -56,7 +56,9 @@ const Qualifications = require("../models/adminModel/Qualifications");
 const LiveStreaming = require("../models/adminModel/LiveStreaming");
 const AstrologerRequests = require("../models/adminModel/AstrologerRequests");
 const Blogs = require("../models/adminModel/Blogs");
-const FortuneStore = require("../models/adminModel/FortuneStore");
+const PoojaCategory = require("../models/adminModel/PoojaCategory");
+const Pooja = require("../models/adminModel/Pooja");
+const ProductCategory = require("../models/adminModel/ProductCategory");
 
 // add Skill
 const uploadSkill = configureMulter("uploads/skillsImage/", [
@@ -8506,11 +8508,11 @@ exports.createLiveStreaming = async function (req, res) {
   }
 };
 
-//======================== Fortune Store ============================
+//======================== Pooja Category ============================
 
 const fortuneStorage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/fortuneStore/"); // Specify the destination folder
+    cb(null, "uploads/poojaCategory/"); // Specify the destination folder
   },
   filename: function (req, file, cb) {
     const uniqueFilename = `${uuidv4()}${getFileExtension(file.originalname)}`;
@@ -8524,7 +8526,7 @@ function getFileExtension(filename) {
 
 const uploadImage = multer({ storage: fortuneStorage }).single("image");
 
-exports.addFortuneStore = async function (req, res) {
+exports.addPoojaCategory = async function (req, res) {
   try {
     uploadImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
@@ -8541,7 +8543,7 @@ exports.addFortuneStore = async function (req, res) {
         });
       }
 
-      const { title, status, storeCategory } = req.body;
+      const { title, status } = req.body;
 
       if (!title) {
         return res
@@ -8557,34 +8559,33 @@ exports.addFortuneStore = async function (req, res) {
 
       const imagePath = req.file ? req.file.path : ""; // If image uploaded, get its path
 
-      const newStore = new FortuneStore({
+      const newStore = new PoojaCategory({
         title,
         image: imagePath, // Assign the image path to the 'image' field
         status: status,
-        storeCategory: storeCategory,
       });
 
       await newStore.save();
 
       return res.status(200).json({
         success: true,
-        message: "Store added successfully",
+        message: "Pooja Category added successfully",
         newStore,
       });
     });
   } catch (error) {
-    console.error("Error adding astroblog:", error);
+    console.error("Error adding pooja category:", error);
     return res.status(500).json({
       success: false,
-      message: "Failed to add astroblog",
+      message: "Failed to add pooja category",
       error: error.message,
     });
   }
 };
 
-exports.FortuneStoreList = async function (req, res) {
+exports.PoojaCategoryList = async function (req, res) {
   try {
-    const allStore = await FortuneStore.find();
+    const allStore = await PoojaCategory.find();
 
     res.status(200).json({ success: true, allStore });
   } catch (error) {
@@ -8597,7 +8598,7 @@ exports.FortuneStoreList = async function (req, res) {
   }
 };
 
-exports.updateFortuneStore = async function (req, res) {
+exports.updatePoojaCategory = async function (req, res) {
   try {
     uploadImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
@@ -8607,19 +8608,17 @@ exports.updateFortuneStore = async function (req, res) {
           .json({ success: false, message: "Multer error", error: err });
       } else if (err) {
         // Other errors during file upload
-        return res
-          .status(500)
-          .json({
-            success: false,
-            message: "Error uploading file",
-            error: err,
-          });
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
       }
 
       const { storeId, title } = req.body;
       const imagePath = req.file ? req.file.path : "";
 
-      const storeToUpdate = await FortuneStore.findById(storeId);
+      const storeToUpdate = await PoojaCategory.findById(storeId);
 
       if (!storeToUpdate) {
         return res
@@ -8636,7 +8635,7 @@ exports.updateFortuneStore = async function (req, res) {
       return res.status(200).json({
         success: true,
         message: "Store updated successfully",
-        updatedFortuneStore: storeToUpdate,
+        updatedPoojaCategory: storeToUpdate,
       });
     });
   } catch (error) {
@@ -8649,10 +8648,10 @@ exports.updateFortuneStore = async function (req, res) {
   }
 };
 
-exports.deleteFortuneStore = async function (req, res) {
+exports.deletePoojaCategory = async function (req, res) {
   try {
     const storeId = req.body.storeId;
-    const deletedStore = await FortuneStore.findByIdAndUpdate(
+    const deletedStore = await PoojaCategory.findByIdAndUpdate(
       storeId, // Use storeId directly
       { $set: { deleted: true } },
       { new: true } // Return the updated document
@@ -8676,3 +8675,722 @@ exports.deleteFortuneStore = async function (req, res) {
     });
   }
 };
+
+exports.updatePoojaCategoryStatus = async function (req, res) {
+  try {
+    const { poojaCategoryId, status } = req.body;
+
+    if (!poojaCategoryId || !status) {
+      return res.status(400).json({ success: false, message: "Invalid request. poojaId and status are required." });
+    }
+
+    const poojaToUpdate = await PoojaCategory.findById(poojaCategoryId);
+
+    if (!poojaToUpdate) {
+      return res.status(404).json({ success: false, message: "Pooja category not found." });
+    }
+
+    // Update status field
+    poojaToUpdate.status = status;
+
+    await poojaToUpdate.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pooja status updated successfully",
+      updatedPooja: poojaToUpdate,
+    });
+  } catch (error) {
+    console.error("Error updating pooja status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja status",
+      error: error.message,
+    });
+  }
+};
+
+//======================== Pooja ============================
+
+const poojaStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/pooja/"); // Specify the destination folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${uuidv4()}${getFileExtension(file.originalname)}`;
+    cb(null, uniqueFilename); 
+  },
+});
+
+function getFileExtension(filename) {
+  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 1);
+}
+
+const uploadPoojaImage = multer({ storage: poojaStorage }).single("image");
+
+exports.addPooja = async function (req, res) {
+  try {
+    uploadPoojaImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { title, description, price, status } = req.body;
+
+      if (!title) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Title is required" });
+      }
+
+      if (!status) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Status is required" });
+      }
+
+      const imagePath = req.file ? req.file.path : ""; // If image uploaded, get its path
+
+      const newPooja = new Pooja({
+        title,
+        description,
+        price,
+        image: imagePath, // Assign the image path to the 'image' field
+        status: status,
+      });
+
+      await newPooja.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Pooja added successfully",
+        newPooja,
+      });
+    });
+  } catch (error) {
+    console.error("Error adding Pooja:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add Pooja",
+      error: error.message,
+    });
+  }
+};
+
+exports.PoojaList = async function (req, res) {
+  try {
+    const allPooja = await Pooja.find();
+
+    res.status(200).json({ success: true, allPooja });
+  } catch (error) {
+    console.error("Error fetching  Blog:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch  Blog",
+      error: error.message,
+    });
+  }
+};
+
+exports.updatePooja = async function (req, res) {
+  try {
+    uploadPoojaImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { poojaId, title, description, poojaCategoryId, price, status } = req.body;
+      const imagePath = req.file ? req.file.path : "";
+
+      if (!poojaId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "pooja id not found" });
+      }
+
+      const poojaToUpdate = await Pooja.findById(poojaId);
+
+      if (!poojaToUpdate) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Pooja not found." });
+      }
+
+      // Update store properties
+      poojaToUpdate.title = title;
+      poojaToUpdate.image = imagePath;
+      poojaToUpdate.description = description;
+      poojaToUpdate.price = price;
+      poojaToUpdate.status = status;
+      poojaToUpdate.status = status;
+      poojaToUpdate.poojaCategoryId = poojaCategoryId;
+      
+
+      await poojaToUpdate.save();
+      await poojaToUpdate.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Pooja updated successfully",
+        updatedPooja: poojaToUpdate,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating pooja:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja",
+      error: error.message,
+    });
+  }
+};
+
+exports.deletePooja = async function (req, res) {
+  try {
+    const poojaId = req.body.poojaId;
+    const deletedPooja = await Pooja.findByIdAndUpdate(
+      poojaId,
+      { $set: { deleted: true } },
+      { new: true }
+    );
+
+    if (!deletedPooja) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Pooja not found." });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Pooja deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting pooja:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to soft delete pooja",
+      error: error.message,
+    });
+  }
+};
+
+exports.updatePoojaStatus = async function (req, res) {
+  try {
+    const { poojaId, status } = req.body;
+
+    if (!poojaId || !status) {
+      return res.status(400).json({ success: false, message: "Invalid request. poojaId and status are required." });
+    }
+
+    const poojaToUpdate = await Pooja.findById(poojaId);
+
+    if (!poojaToUpdate) {
+      return res.status(404).json({ success: false, message: "Pooja not found." });
+    }
+
+    // Update status field
+    poojaToUpdate.status = status;
+
+    await poojaToUpdate.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pooja status updated successfully",
+      updatedPooja: poojaToUpdate,
+    });
+  } catch (error) {
+    console.error("Error updating pooja status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja status",
+      error: error.message,
+    });
+  }
+};
+
+
+//======================== Product Category ============================
+
+const productCategoryStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/productCategory/"); // Specify the destination folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${uuidv4()}${getFileExtension(file.originalname)}`;
+    cb(null, uniqueFilename); // Set unique filename with original extension
+  },
+});
+
+function getFileExtension(filename) {
+  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 1);
+}
+
+const uploadProductCategoryImage = multer({ storage: productCategoryStorage }).single("image");
+
+exports.addProductCategory = async function (req, res) {
+  try {
+    uploadProductCategoryImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { title, status } = req.body;
+
+      if (!title) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Title is required" });
+      }
+
+      if (!status) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Status is required" });
+      }
+
+      const imagePath = req.file ? req.file.path : ""; // If image uploaded, get its path
+
+      const newProductCategory = new ProductCategory({
+        title,
+        image: imagePath, // Assign the image path to the 'image' field
+        status: status,
+      });
+
+      await newProductCategory.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Product Category added successfully",
+        newProductCategory,
+      });
+    });
+  } catch (error) {
+    console.error("Error adding product category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add product category",
+      error: error.message,
+    });
+  }
+};
+
+exports.ProductCategoryList = async function (req, res) {
+  try {
+    const allProdcutCategory = await ProductCategory.find();
+
+    res.status(200).json({ success: true, allProdcutCategory });
+  } catch (error) {
+    console.error("Error fetching  Data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch  Data",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateProductCategory = async function (req, res) {
+  try {
+    uploadProductCategoryImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { productCategoryId, title } = req.body;
+      const imagePath = req.file ? req.file.path : "";
+
+      const storeToUpdate = await ProductCategory.findById(productCategoryId);
+
+      if (!storeToUpdate) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Product category not found." });
+      }
+
+      // Update store properties
+      storeToUpdate.title = title;
+      storeToUpdate.image = imagePath;
+
+      await storeToUpdate.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Product category updated successfully",
+        updatedProductCategory: storeToUpdate,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating product category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update data",
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteProductCategory = async function (req, res) {
+  try {
+    const productCategoryId = req.body.productCategoryId;
+    const deleteProductCategory = await ProductCategory.findByIdAndUpdate(
+      productCategoryId,
+      { $set: { deleted: true } },
+      { new: true } 
+    );
+
+    if (!deleteProductCategory) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Product category not found." });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Product category deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting data:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to soft delete product category",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateProductCategoryStatus = async function (req, res) {
+  try {
+    const { productCategoryId, status } = req.body;
+
+    if (!productCategoryId || !status) {
+      return res.status(400).json({ success: false, message: "Invalid request. product category Id and status are required." });
+    }
+
+    const productToUpdate = await ProductCategory.findById(productCategoryId);
+
+    if (!productToUpdate) {
+      return res.status(404).json({ success: false, message: "Pooja category not found." });
+    }
+
+    // Update status field
+    productToUpdate.status = status;
+
+    await productToUpdate.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pooja status updated successfully",
+      updatedProduct: productToUpdate,
+    });
+  } catch (error) {
+    console.error("Error updating pooja status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja status",
+      error: error.message,
+    });
+  }
+};
+
+//======================== Product ============================
+
+const productStorage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/products/"); // Specify the destination folder
+  },
+  filename: function (req, file, cb) {
+    const uniqueFilename = `${uuidv4()}${getFileExtension(file.originalname)}`;
+    cb(null, uniqueFilename); 
+  },
+});
+
+function getFileExtension(filename) {
+  return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 1);
+}
+
+const uploadProductImages = multer({ 
+  storage: productStorage,
+  fileFilter: function (req, file, cb) {
+    // Allow only image files
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  }
+}).array("galleryImage", 10); // Allow uploading up to 10 gallery images
+
+const uploadProductImage = multer({ 
+  storage: productStorage,
+  fileFilter: function (req, file, cb) {
+    // Allow only image files
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+      return cb(new Error('Only image files are allowed!'), false);
+    }
+    cb(null, true);
+  }
+}).single("image"); // Allow uploading a single image for the main image
+
+exports.addProduct = async function (req, res) {
+  try {
+    uploadProductImages(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading gallery images",
+          error: err,
+        });
+      }
+
+        uploadProductImage(req, res, async function (err) {
+        if (err instanceof multer.MulterError) {
+          // Multer error handling
+          return res
+            .status(500)
+            .json({ success: false, message: "Multer error", error: err });
+        } else if (err) {
+          // Other errors during file upload
+          return res.status(500).json({
+            success: false,
+            message: "Error uploading main image",
+            error: err,
+          });
+        }
+
+        const { productCategory, title, description, price, discount, status } = req.body;
+
+        if (!title) {
+          return res
+            .status(400)
+            .json({ success: false, message: "Title is required" });
+        }
+
+        if (!status) {
+          return res
+            .status(400)
+            .json({ success: false, message: "Status is required" });
+        }
+
+        let discountedPrice = price; 
+
+        if (discount && discount > 0) {
+          discountedPrice = price - (price * discount) / 100; 
+        }
+
+        const imagePaths = req.file ? req.file.path : "";
+        const galleryImages = req.files.map(file => file.path);
+
+        const newProduct = new Product({
+          productCategory,
+          title,
+          description,
+          price,
+          discountedPrice, 
+          image: imagePaths,
+          galleryImage: galleryImages,
+          status,
+        });
+
+        await newProduct.save();
+
+        return res.status(200).json({
+          success: true,
+          message: "Product added successfully",
+          newProduct,
+        });
+      });
+    });
+  } catch (error) {
+    console.error("Error adding Product:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to add Product",
+      error: error.message,
+    });
+  }
+};
+
+
+exports.ProductList = async function (req, res) {
+  try {
+    const allPooja = await Pooja.find();
+
+    res.status(200).json({ success: true, allPooja });
+  } catch (error) {
+    console.error("Error fetching  Blog:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch  Blog",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateProduct = async function (req, res) {
+  try {
+    uploadProductImage(req, res, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Multer error handling
+        return res
+          .status(500)
+          .json({ success: false, message: "Multer error", error: err });
+      } else if (err) {
+        // Other errors during file upload
+        return res.status(500).json({
+          success: false,
+          message: "Error uploading file",
+          error: err,
+        });
+      }
+
+      const { poojaId, title, description, poojaCategoryId, price, status } = req.body;
+      const imagePath = req.file ? req.file.path : "";
+
+      if (!poojaId) {
+        return res
+          .status(400)
+          .json({ success: false, message: "pooja id not found" });
+      }
+
+      const poojaToUpdate = await Pooja.findById(poojaId);
+
+      if (!poojaToUpdate) {
+        return res
+          .status(404)
+          .json({ success: false, message: "Pooja not found." });
+      }
+
+      // Update store properties
+      poojaToUpdate.title = title;
+      poojaToUpdate.image = imagePath;
+      poojaToUpdate.description = description;
+      poojaToUpdate.price = price;
+      poojaToUpdate.status = status;
+      poojaToUpdate.status = status;
+      poojaToUpdate.poojaCategoryId = poojaCategoryId;
+      
+
+      await poojaToUpdate.save();
+      await poojaToUpdate.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Pooja updated successfully",
+        updatedPooja: poojaToUpdate,
+      });
+    });
+  } catch (error) {
+    console.error("Error updating pooja:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja",
+      error: error.message,
+    });
+  }
+};
+
+exports.deleteProduct = async function (req, res) {
+  try {
+    const poojaId = req.body.poojaId;
+    const deletedPooja = await Pooja.findByIdAndUpdate(
+      poojaId,
+      { $set: { deleted: true } },
+      { new: true }
+    );
+
+    if (!deletedPooja) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Pooja not found." });
+    }
+
+    res
+      .status(200)
+      .json({ success: true, message: "Pooja deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting pooja:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to soft delete pooja",
+      error: error.message,
+    });
+  }
+};
+
+exports.updateProductStatus = async function (req, res) {
+  try {
+    const { poojaId, status } = req.body;
+
+    if (!poojaId || !status) {
+      return res.status(400).json({ success: false, message: "Invalid request. poojaId and status are required." });
+    }
+
+    const poojaToUpdate = await Pooja.findById(poojaId);
+
+    if (!poojaToUpdate) {
+      return res.status(404).json({ success: false, message: "Pooja not found." });
+    }
+
+    // Update status field
+    poojaToUpdate.status = status;
+
+    await poojaToUpdate.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pooja status updated successfully",
+      updatedPooja: poojaToUpdate,
+    });
+  } catch (error) {
+    console.error("Error updating pooja status:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update pooja status",
+      error: error.message,
+    });
+  }
+};
+

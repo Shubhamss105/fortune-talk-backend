@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const fortuneStoreSchema = new mongoose.Schema(
+const poojaCategorySchema = new mongoose.Schema(
   {
     title: {
       type: String,
@@ -9,10 +9,6 @@ const fortuneStoreSchema = new mongoose.Schema(
     image: {
       type: String,
       required: true,
-    },
-    storeCategory: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "storeCategory",
     },
     status: {
       type: String,
@@ -23,13 +19,13 @@ const fortuneStoreSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { collection: "FortuneStore", timestamps: true }
+  { collection: "PoojaCategory", timestamps: true }
 );
 
-fortuneStoreSchema.pre("find", function () {
+poojaCategorySchema.pre("find", function () {
   this.where({ deleted: false });
 });
 
-const FortuneStore = mongoose.model("FortuneStore", fortuneStoreSchema);
+const PoojaCategory = mongoose.model("PoojaCategory", poojaCategorySchema);
 
-module.exports = FortuneStore;
+module.exports = PoojaCategory;
