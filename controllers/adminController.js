@@ -59,6 +59,7 @@ const Blogs = require("../models/adminModel/Blogs");
 const PoojaCategory = require("../models/adminModel/PoojaCategory");
 const Pooja = require("../models/adminModel/Pooja");
 const ProductCategory = require("../models/adminModel/ProductCategory");
+const Product = require("../models/adminModel/Product");
 
 // add Skill
 const uploadSkill = configureMulter("uploads/skillsImage/", [
@@ -9146,17 +9147,6 @@ function getFileExtension(filename) {
   return filename.slice(((filename.lastIndexOf(".") - 1) >>> 0) + 1);
 }
 
-const uploadProductImages = multer({ 
-  storage: productStorage,
-  fileFilter: function (req, file, cb) {
-    // Allow only image files
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-      return cb(new Error('Only image files are allowed!'), false);
-    }
-    cb(null, true);
-  }
-}).array("galleryImage", 10); // Allow uploading up to 10 gallery images
-
 const uploadProductImage = multer({ 
   storage: productStorage,
   fileFilter: function (req, file, cb) {
@@ -9166,11 +9156,11 @@ const uploadProductImage = multer({
     }
     cb(null, true);
   }
-}).single("image"); // Allow uploading a single image for the main image
+}).single("image"); 
 
 exports.addProduct = async function (req, res) {
   try {
-    uploadProductImages(req, res, async function (err) {
+    uploadProductImage(req, res, async function (err) {
       if (err instanceof multer.MulterError) {
         // Multer error handling
         return res
@@ -9180,67 +9170,51 @@ exports.addProduct = async function (req, res) {
         // Other errors during file upload
         return res.status(500).json({
           success: false,
-          message: "Error uploading gallery images",
+          message: "Error uploading main image",
           error: err,
         });
       }
 
-        uploadProductImage(req, res, async function (err) {
-        if (err instanceof multer.MulterError) {
-          // Multer error handling
-          return res
-            .status(500)
-            .json({ success: false, message: "Multer error", error: err });
-        } else if (err) {
-          // Other errors during file upload
-          return res.status(500).json({
-            success: false,
-            message: "Error uploading main image",
-            error: err,
-          });
-        }
+      const { productCategory, productCategoryId, title, description, price, discount, status } = req.body;
 
-        const { productCategory, title, description, price, discount, status } = req.body;
+      if (!title) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Title is required" });
+      }
 
-        if (!title) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Title is required" });
-        }
+      if (!status) {
+        return res
+          .status(400)
+          .json({ success: false, message: "Status is required" });
+      }
 
-        if (!status) {
-          return res
-            .status(400)
-            .json({ success: false, message: "Status is required" });
-        }
+      let discountedPrice = price; 
 
-        let discountedPrice = price; 
+      if (discount && discount > 0) {
+        discountedPrice = price - (price * discount) / 100; 
+      }
 
-        if (discount && discount > 0) {
-          discountedPrice = price - (price * discount) / 100; 
-        }
+      const imagePaths = req.file ? req.file.path : "";
 
-        const imagePaths = req.file ? req.file.path : "";
-        const galleryImages = req.files.map(file => file.path);
+      const newProduct = new Product({
+        productCategory,
+        title,
+        description,
+        productCategoryId,
+        price,
+        discount,
+        discountedPrice, 
+        image: imagePaths,
+        status,
+      });
 
-        const newProduct = new Product({
-          productCategory,
-          title,
-          description,
-          price,
-          discountedPrice, 
-          image: imagePaths,
-          galleryImage: galleryImages,
-          status,
-        });
+      await newProduct.save();
 
-        await newProduct.save();
-
-        return res.status(200).json({
-          success: true,
-          message: "Product added successfully",
-          newProduct,
-        });
+      return res.status(200).json({
+        success: true,
+        message: "Product added successfully",
+        newProduct,
       });
     });
   } catch (error) {
@@ -9253,144 +9227,142 @@ exports.addProduct = async function (req, res) {
   }
 };
 
-
 exports.ProductList = async function (req, res) {
   try {
-    const allPooja = await Pooja.find();
+    const allProducts = await Product.find();
 
-    res.status(200).json({ success: true, allPooja });
+    res.status(200).json({ success: true, allProducts });
   } catch (error) {
-    console.error("Error fetching  Blog:", error);
+    console.error("Error fetching  Products:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch  Blog",
+      message: "Failed to fetch  Products",
       error: error.message,
     });
   }
 };
 
-exports.updateProduct = async function (req, res) {
-  try {
-    uploadProductImage(req, res, async function (err) {
-      if (err instanceof multer.MulterError) {
-        // Multer error handling
-        return res
-          .status(500)
-          .json({ success: false, message: "Multer error", error: err });
-      } else if (err) {
-        // Other errors during file upload
-        return res.status(500).json({
-          success: false,
-          message: "Error uploading file",
-          error: err,
-        });
-      }
+// exports.updateProduct = async function (req, res) {
+//   try {
+//     uploadProductImage(req, res, async function (err) {
+//       if (err instanceof multer.MulterError) {
+//         // Multer error handling
+//         return res
+//           .status(500)
+//           .json({ success: false, message: "Multer error", error: err });
+//       } else if (err) {
+//         // Other errors during file upload
+//         return res.status(500).json({
+//           success: false,
+//           message: "Error uploading file",
+//           error: err,
+//         });
+//       }
 
-      const { poojaId, title, description, poojaCategoryId, price, status } = req.body;
-      const imagePath = req.file ? req.file.path : "";
+//       const { productId, title, description, productCategoryId, price, discount, status } = req.body;
+//       const imagePath = req.file ? req.file.path : "";
 
-      if (!poojaId) {
-        return res
-          .status(400)
-          .json({ success: false, message: "pooja id not found" });
-      }
+//       if (!productId) {
+//         return res
+//           .status(400)
+//           .json({ success: false, message: "product id not found" });
+//       }
 
-      const poojaToUpdate = await Pooja.findById(poojaId);
+//       const productToUpdate = await Product.findById(productId);
 
-      if (!poojaToUpdate) {
-        return res
-          .status(404)
-          .json({ success: false, message: "Pooja not found." });
-      }
+//       if (!productToUpdate) {
+//         return res
+//           .status(404)
+//           .json({ success: false, message: "Product not found." });
+//       }
 
-      // Update store properties
-      poojaToUpdate.title = title;
-      poojaToUpdate.image = imagePath;
-      poojaToUpdate.description = description;
-      poojaToUpdate.price = price;
-      poojaToUpdate.status = status;
-      poojaToUpdate.status = status;
-      poojaToUpdate.poojaCategoryId = poojaCategoryId;
+//       // Update store properties
+//       productToUpdate.title = title;
+//       productToUpdate.image = imagePath;
+//       productToUpdate.description = description;
+//       productToUpdate.price = price;
+//       productToUpdate.status = status;
+//       productToUpdate.discount = discount;
+//       productToUpdate.productCategoryId = productCategoryId;
       
 
-      await poojaToUpdate.save();
-      await poojaToUpdate.save();
+//       await productToUpdate.save();
+//       await productToUpdate.save();
 
-      return res.status(200).json({
-        success: true,
-        message: "Pooja updated successfully",
-        updatedPooja: poojaToUpdate,
-      });
-    });
-  } catch (error) {
-    console.error("Error updating pooja:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update pooja",
-      error: error.message,
-    });
-  }
-};
+//       return res.status(200).json({
+//         success: true,
+//         message: "Product updated successfully",
+//         updatedPooja: poojaToUpdate,
+//       });
+//     });
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to update product",
+//       error: error.message,
+//     });
+//   }
+// };
+// exports.deleteProduct = async function (req, res) {
+//   try {
+//     const poojaId = req.body.poojaId;
+//     const deletedPooja = await Pooja.findByIdAndUpdate(
+//       poojaId,
+//       { $set: { deleted: true } },
+//       { new: true }
+//     );
 
-exports.deleteProduct = async function (req, res) {
-  try {
-    const poojaId = req.body.poojaId;
-    const deletedPooja = await Pooja.findByIdAndUpdate(
-      poojaId,
-      { $set: { deleted: true } },
-      { new: true }
-    );
+//     if (!deletedPooja) {
+//       return res
+//         .status(404)
+//         .json({ success: false, message: "Pooja not found." });
+//     }
 
-    if (!deletedPooja) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Pooja not found." });
-    }
+//     res
+//       .status(200)
+//       .json({ success: true, message: "Pooja deleted successfully" });
+//   } catch (error) {
+//     console.error("Error deleting pooja:", error);
+//     res.status(500).json({
+//       success: false,
+//       message: "Failed to soft delete pooja",
+//       error: error.message,
+//     });
+//   }
+// };
 
-    res
-      .status(200)
-      .json({ success: true, message: "Pooja deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting pooja:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to soft delete pooja",
-      error: error.message,
-    });
-  }
-};
+// exports.updateProductStatus = async function (req, res) {
+//   try {
+//     const { poojaId, status } = req.body;
 
-exports.updateProductStatus = async function (req, res) {
-  try {
-    const { poojaId, status } = req.body;
+//     if (!poojaId || !status) {
+//       return res.status(400).json({ success: false, message: "Invalid request. poojaId and status are required." });
+//     }
 
-    if (!poojaId || !status) {
-      return res.status(400).json({ success: false, message: "Invalid request. poojaId and status are required." });
-    }
+//     const poojaToUpdate = await Pooja.findById(poojaId);
 
-    const poojaToUpdate = await Pooja.findById(poojaId);
+//     if (!poojaToUpdate) {
+//       return res.status(404).json({ success: false, message: "Pooja not found." });
+//     }
 
-    if (!poojaToUpdate) {
-      return res.status(404).json({ success: false, message: "Pooja not found." });
-    }
+//     // Update status field
+//     poojaToUpdate.status = status;
 
-    // Update status field
-    poojaToUpdate.status = status;
+//     await poojaToUpdate.save();
 
-    await poojaToUpdate.save();
-
-    return res.status(200).json({
-      success: true,
-      message: "Pooja status updated successfully",
-      updatedPooja: poojaToUpdate,
-    });
-  } catch (error) {
-    console.error("Error updating pooja status:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Failed to update pooja status",
-      error: error.message,
-    });
-  }
-};
+//     return res.status(200).json({
+//       success: true,
+//       message: "Pooja status updated successfully",
+//       updatedPooja: poojaToUpdate,
+//     });
+//   } catch (error) {
+//     console.error("Error updating pooja status:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Failed to update pooja status",
+//       error: error.message,
+//     });
+//   }
+// };
 

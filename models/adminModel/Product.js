@@ -43,13 +43,13 @@ const productSchema = new mongoose.Schema(
       default: false,
     },
   },
-  { collection: "Pooja", timestamps: true }
+  { collection: "Product", timestamps: true }
 );
 
-poojaSchema.pre("find", function () {
+productSchema.pre("find", function () {
   this.where({ deleted: false });
 });
 
-const Product = mongoose.model("Pooja", productSchema);
+const Product = mongoose.model("Product", productSchema);
 
 module.exports = Product;

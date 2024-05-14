@@ -263,6 +263,8 @@ router.put('/update-product-category-status',adminController.updateProductCatego
 
 //Product
 router.post('/create-product',adminController.addProduct)
+router.get('/products-list',adminController.ProductList)
+// router.put('/update-product/:productId',adminController.updateProduct)
 
 
 
