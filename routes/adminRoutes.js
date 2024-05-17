@@ -144,8 +144,10 @@ router.post('/update_service_charges', adminController.updateServiceCharges)
 router.post('/delete-astrologer-account', adminController.deleteAstrologerAccount);
 
 // Blogs Category
-router.post('/add-blog-category', adminController.addBlogCategory);
+router.post('/add-blog-category', adminController.addBlogCategory); 
 router.get('/blog-category-list', adminController.categoryBlogList);
+router.put('/update-blog-category', adminController.updateBlogCategory);
+router.delete('/delete-blog-category', adminController.deleteBlogCategory);
 
 
 // Blog

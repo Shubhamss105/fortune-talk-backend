@@ -6152,7 +6152,7 @@ exports.deleteBlog = async function (req, res) {
     if (!deletedBlog) {
       return res
         .status(404)
-        .json({ success: false, message: "Blog not found." });
+        .json({ success: false, message: "Blog  not found." });
     }
 
     res
@@ -6171,27 +6171,22 @@ exports.deleteBlog = async function (req, res) {
 //====================== add blog category  =====================================================
 exports.addBlogCategory = async function (req, res) {
   try {
-    const { blog_category } = req.body;
+    const { title,status } = req.body;
 
-    // Ensure that the blog category is provided
-    if (!blog_category) {
+    if (!title || !status) {
       return res
         .status(400)
-        .json({ success: false, message: "Blog category is required" });
+        .json({ success: false, message: "Blog category title and status is required" });
     }
 
-    // Create a new instance of the BlogsCategory model with the provided blog category
-    const newBlogCategory = new BlogsCategory({ blog_category });
+    const newBlogCategory = new BlogsCategory({ title,status });
 
-    // Save the new blog category to the database
     await newBlogCategory.save();
 
-    // Respond with a success message
     return res
       .status(200)
       .json({ success: true, message: "Blog category added successfully" });
   } catch (error) {
-    // Handle any errors that occur during the process
     console.error("Error adding Blog Category:", error);
     return res.status(500).json({
       success: false,
@@ -6200,7 +6195,6 @@ exports.addBlogCategory = async function (req, res) {
     });
   }
 };
-
 exports.categoryBlogList = async function (req, res) {
   try {
     const categoryBlog = await BlogsCategory.find();
@@ -6215,6 +6209,89 @@ exports.categoryBlogList = async function (req, res) {
     });
   }
 };
+
+exports.updateBlogCategory = async function (req, res) {
+  try {
+    // const { id } = req.params;
+    const {id, title, status } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog category ID is required",
+      });
+    }
+
+    if (!title || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog category title and status are required",
+      });
+    }
+
+    const updatedBlogCategory = await BlogsCategory.findByIdAndUpdate(
+      id,
+      { title, status },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedBlogCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog category not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Blog category updated successfully",
+      data: updatedBlogCategory,
+    });
+  } catch (error) {
+    console.error("Error updating Blog Category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update Blog Category",
+      error: error.message,
+    });
+  }
+};
+exports.deleteBlogCategory = async function (req, res) {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: "Blog category ID is required",
+      });
+    }
+
+    const deletedBlogCategory = await BlogsCategory.findByIdAndDelete(id);
+
+    if (!deletedBlogCategory) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog category not found",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Blog category deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting Blog Category:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to delete Blog Category",
+      error: error.message,
+    });
+  }
+};
+
+
+
 
 //================================ Testimonial =================================================
 

@@ -2,10 +2,13 @@ const mongoose = require('mongoose');
 
 const blogsCategorySchema = new mongoose.Schema(
   {
-    blog_category: {
+    title: {
       type: String,
       required: true,
-      unique: true,
+    },
+    status: {
+      type: String,
+      enum: ["Active", "InActive"],
     },
   },
   { timestamps: true, collection: 'BlogsCategory' }
